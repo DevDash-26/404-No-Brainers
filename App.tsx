@@ -54,7 +54,7 @@ type Screen =
   | 'events'
   | 'event-detail'
   | 'calendar'
-  | 'programmes'
+  | 'programme'
   | 'academic-support'
   | 'directory'
   | 'services'
@@ -94,7 +94,7 @@ export default function App() {
     case 'events': body = <EventsScreen onBack={() => go('home')} onOpen={openEvent} interested={interested} setInterested={setInterested} />; break;
     case 'event-detail': body = <EventDetail event={selectedEvent} onBack={() => go('events')} interested={interested.includes(selectedEvent.id)} toggle={() => setInterested(x => x.includes(selectedEvent.id) ? x.filter(id => id !== selectedEvent.id) : [...x, selectedEvent.id])} />; break;
     case 'calendar': body = <AcademicCalendar onBack={() => go('home')} />; break;
-    case 'programmes': body = <Programmes onBack={() => go('home')} />; break;
+    case 'programme': body = <Programmes onBack={() => go('home')} />; break;
     case 'academic-support': body = <AcademicSupport onBack={() => go('home')} />; break;
     case 'directory': body = <Directory onBack={() => go('home')} />; break;
     case 'services': body = <Services go={go} />; break;
@@ -242,7 +242,7 @@ function Home({ go, openEvent }: { go: (s: Screen) => void; openEvent: (e: Event
     ['school', 'Academic Support', 'academic-support'],
     ['card', 'Payment Portal', 'services'],
     ['rocket', 'LaunchPad', 'services'],
-    ['book', 'Programmes', 'programmes'],
+    ['book', 'programme', 'programme'],
     ['people', 'Staff Directory', 'directory'],
     ['sparkles', 'AI Assistant', 'ai'],
   ];
@@ -259,7 +259,7 @@ function Home({ go, openEvent }: { go: (s: Screen) => void; openEvent: (e: Event
       </View>
       <ScrollView style={s.flex} contentContainerStyle={s.pagePadBottom} showsVerticalScrollIndicator={false}>
         <Stagger delay={70}>
-          <MotionPressable onPress={() => go('programmes')} style={s.banner}>
+          <MotionPressable onPress={() => go('programme')} style={s.banner}>
             <Image source={{ uri: 'https://ucl.lk/wp-content/uploads/2026/01/UCL_Library-768x513.jpg' }} style={s.bannerImage} resizeMode="cover" />
             <View style={s.bannerShade} />
             <View style={s.bannerContent}><Text style={s.bannerTitle}>Welcome to UCL!</Text><Text style={s.bannerSub}>Learn. Grow. Belong.</Text></View>
@@ -337,7 +337,7 @@ function EventsScreen({ onBack, onOpen, interested, setInterested }: { onBack: (
       ) : (
         <ScrollView contentContainerStyle={s.listPage}>
           <ListCard icon="school-outline" title="UCL Monash Graduation 2026" subtitle="UCL celebrated 211 Monash College programme graduates at Waters Edge." meta="9 Jul 2026 • News" red />
-          <ListCard icon="trophy-outline" title="Foundation Programme Award Ceremony" subtitle="A milestone celebrating students in Information Technology and Business." meta="8 Jun 2026 • News" red />
+          <ListCard icon="trophy-outline" title="Foundation programme Award Ceremony" subtitle="A milestone celebrating students in Information Technology and Business." meta="8 Jun 2026 • News" red />
           <ListCard icon="code-slash-outline" title="UCL × Xiteb Industry Collaboration" subtitle="Industry collaboration supporting future technology talent." meta="2026 • News" red />
         </ScrollView>
       )}
@@ -350,7 +350,7 @@ function EventDetail({ event, onBack, interested, toggle }: { event: EventItem; 
     <View style={s.flex}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 28 }}>
         <View style={s.detailHero}>
-          <Image source={event.image} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+          <Image source={event.image} style={StyleSheet.absoluteFill} resizeMode="cover" />
           <View style={s.detailShade} />
           <View style={s.detailTop}><MotionPressable onPress={onBack} style={s.detailCircle}><Ionicons name="chevron-back" size={24} color={C.white} /></MotionPressable><MotionPressable onPress={() => Alert.alert('Share', 'Sharing is a frontend demo action.')} style={s.detailCircle}><Ionicons name="share-outline" size={20} color={C.white} /></MotionPressable></View>
         </View>
@@ -737,6 +737,69 @@ function AcademicCalendar({ onBack }: { onBack: () => void }) {
   );
 }
 
+function Programmes({ onBack }: { onBack: () => void }) {
+  const [search, setSearch] = useState('');
+
+  const filtered = useMemo(
+    () =>
+      programmes.filter(([name, partner]) =>
+        `${name} ${partner}`.toLowerCase().includes(search.toLowerCase())
+      ),
+    [search]
+  );
+
+  return (
+    <View style={s.flex}>
+      <Header title="Programmes" onBack={onBack} />
+      <ScrollView
+        contentContainerStyle={s.listPage}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={s.programmeHero}>
+          <Image
+            source={require('./assets/programme-banner.png')}
+            style={StyleSheet.absoluteFill}
+            resizeMode="cover"
+          />
+          <View style={s.programmeShade} />
+          <Text style={s.programmeHeroTitle}>
+            World-class programmes{`\n`}for a global future.
+          </Text>
+        </View>
+
+        <View style={{ marginTop: 14 }}>
+          <SearchBox
+            value={search}
+            onChangeText={setSearch}
+            placeholder="Search programmes..."
+          />
+        </View>
+
+        <SectionTitle title="Explore categories" />
+        {programmeGroups.map((p) => (
+          <ListCard
+            key={p.title}
+            icon={p.icon as any}
+            title={p.title}
+            subtitle={p.subtitle}
+            red
+          />
+        ))}
+
+        <SectionTitle title="Programme list" />
+        {filtered.map(([name, partner]) => (
+          <ListCard
+            key={name}
+            icon="book-outline"
+            title={name}
+            subtitle={partner}
+          />
+        ))}
+      </ScrollView>
+    </View>
+  );
+}
+
 function AcademicSupport({ onBack }: { onBack: () => void }) {
   return (
     <View style={s.flex}>
@@ -840,7 +903,7 @@ function AiAssistant({ onBack }: { onBack: () => void }) {
   const suggestions = ['When is my next exam?', 'Show upcoming events', 'Find a study group', 'How do I pay my fees?', 'Contact IT support'];
   const send = (text = input) => {
     const q = text.trim(); if (!q) return;
-    const reply = q.toLowerCase().includes('event') ? 'You can open News & Events from Explore. Current UCL event examples include Career Fair ’26 and the Future Leaders Forum 2026.' : q.toLowerCase().includes('pay') ? 'Open Student Services and choose Payment Portal. The final app can connect this to the university payment system.' : q.toLowerCase().includes('study') ? 'Academic Support includes study groups, peer tutoring and mentorship.' : q.toLowerCase().includes('it') ? `For IT support, open Staff Directory & IT Support. General UCL enquiries: ${contact.general}.` : 'I can help you find announcements, events, academic support, programmes, staff and student services.';
+    const reply = q.toLowerCase().includes('event') ? 'You can open News & Events from Explore. Current UCL event examples include Career Fair ’26 and the Future Leaders Forum 2026.' : q.toLowerCase().includes('pay') ? 'Open Student Services and choose Payment Portal. The final app can connect this to the university payment system.' : q.toLowerCase().includes('study') ? 'Academic Support includes study groups, peer tutoring and mentorship.' : q.toLowerCase().includes('it') ? `For IT support, open Staff Directory & IT Support. General UCL enquiries: ${contact.general}.` : 'I can help you find announcements, events, academic support, programme, staff and student services.';
     setMessages(m => [...m, { id: `m${Date.now()}`, from: 'me', text: q }, { id: `a${Date.now() + 1}`, from: 'assistant', text: reply }]);
     setInput('');
   };
@@ -902,11 +965,11 @@ const s = StyleSheet.create({
   splash: { flex: 1, backgroundColor: C.navy, paddingHorizontal: 24, justifyContent: 'space-between' }, splashCenter: { alignItems: 'center', marginTop: 120 }, splashLogoCard: { width: 128, height: 134, borderRadius: 20, backgroundColor: C.white, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 18, shadowOffset: { width: 0, height: 8 } }, splashTitle: { color: C.white, fontWeight: '900', fontSize: 25, marginTop: 24 }, splashSub: { color: '#E7EEF8', fontSize: 16, lineHeight: 23, textAlign: 'center', marginTop: 7 }, splashBottom: { gap: 14, paddingBottom: 30 }, splashLine: { width: 52, height: 4, borderRadius: 2, backgroundColor: C.red, alignSelf: 'center' }, splashCopy: { color: '#D5E0EE', fontSize: 12.5, lineHeight: 18, textAlign: 'center', paddingHorizontal: 20 },
   authPage: { padding: 22, paddingTop: 36, alignItems: 'center', paddingBottom: 44 }, loginLogoWrap: { width: 95, height: 100, alignItems: 'center', justifyContent: 'center' }, authTitle: { color: C.navy, fontSize: 24, fontWeight: '900', textAlign: 'center', marginTop: 10 }, authSub: { color: C.muted, fontSize: 12.5, textAlign: 'center', marginTop: 5, marginBottom: 22 }, formCard: { width: '100%', marginTop: 18 }, fieldLabel: { color: C.text, fontSize: 12, fontWeight: '800', marginBottom: 7, marginTop: 12 }, input: { height: 48, borderRadius: 12, borderWidth: 1, borderColor: C.border, backgroundColor: C.white, paddingHorizontal: 13, color: C.text }, passwordWrap: { height: 48, borderRadius: 12, borderWidth: 1, borderColor: C.border, backgroundColor: C.white, flexDirection: 'row', alignItems: 'center' }, passwordInput: { flex: 1, paddingHorizontal: 13, color: C.text }, eyeBtn: { width: 44, height: 46, alignItems: 'center', justifyContent: 'center' }, forgot: { color: C.red, fontSize: 11.5, fontWeight: '800', textAlign: 'right', marginVertical: 12 }, orRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 18 }, orLine: { height: 1, backgroundColor: C.border, flex: 1 }, orText: { color: C.subtle, fontSize: 10, fontWeight: '800' }, googleButton: { height: 50, borderRadius: 12, borderWidth: 1, borderColor: C.border, backgroundColor: C.white, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }, googleG: { width: 24, height: 24, borderRadius: 12, backgroundColor: '#F5F8FC', alignItems: 'center', justifyContent: 'center' }, googleText: { color: C.text, fontSize: 13, fontWeight: '800' }, signupInfo: { width: '100%', marginTop: 22, backgroundColor: C.white, borderWidth: 1, borderColor: C.border, borderRadius: 18, padding: 22, alignItems: 'center', gap: 12 }, signupTitle: { color: C.navy, fontSize: 17, fontWeight: '900' }, signupText: { color: C.muted, fontSize: 12.5, lineHeight: 19, textAlign: 'center', marginBottom: 4 },
   rolePage: { flex: 1, padding: 22, paddingTop: 34, backgroundColor: C.bg }, roleTitle: { color: C.navy, fontSize: 23, fontWeight: '900', marginTop: 17 }, roleSub: { color: C.muted, fontSize: 12, textAlign: 'center', marginTop: 5 }, roleCard: { minHeight: 88, borderRadius: 15, borderWidth: 1, borderColor: C.border, backgroundColor: C.white, padding: 13, flexDirection: 'row', alignItems: 'center', gap: 12 }, roleCardActive: { borderColor: C.red, borderWidth: 1.5, backgroundColor: '#FFF9F9' }, roleIcon: { width: 46, height: 46, borderRadius: 13, backgroundColor: C.blueSoft, alignItems: 'center', justifyContent: 'center' }, roleName: { color: C.text, fontSize: 14, fontWeight: '900' }, roleDesc: { color: C.muted, fontSize: 11, lineHeight: 15, marginTop: 3 }, radio: { width: 18, height: 18, borderRadius: 9, borderWidth: 1.5, borderColor: C.subtle, alignItems: 'center', justifyContent: 'center' }, radioOn: { borderColor: C.red }, radioDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: C.red },
-  homeHero: { backgroundColor: C.navy, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 18 }, homeTop: { flexDirection: 'row', alignItems: 'center', marginBottom: 13 }, hello: { color: C.white, fontSize: 18, fontWeight: '900' }, studentLine: { color: '#D4DFEC', fontSize: 10.5, marginTop: 2 }, circleBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', marginRight: 7, backgroundColor: 'rgba(255,255,255,0.08)' }, avatar: { width: 38, height: 38, borderRadius: 19, borderWidth: 1, borderColor: 'rgba(255,255,255,.35)', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,.12)' }, avatarText: { color: C.white, fontSize: 11, fontWeight: '900' }, banner: { height: 132, borderRadius: 18, overflow: 'hidden', marginTop: 16, backgroundColor: C.navy, shadowColor: C.shadow, shadowOpacity: .08, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 }, bannerImage: { width: '100%', height: '100%' }, bannerShade: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(2,24,50,0.32)' }, bannerContent: { position: 'absolute', left: 18, top: 28, right: 18 }, bannerTitle: { color: C.white, fontSize: 22, fontWeight: '900', textShadowColor: 'rgba(0,0,0,.2)', textShadowRadius: 4 }, bannerSub: { color: '#F4F7FB', fontSize: 12.5, marginTop: 4, fontWeight: '600' }, dots: { position: 'absolute', bottom: 11, left: 0, right: 0, flexDirection: 'row', gap: 5, justifyContent: 'center', alignItems: 'center' }, dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,.65)' }, dotActive: { width: 18, height: 6, borderRadius: 3, backgroundColor: C.red }, quickGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 10, marginTop: 14 }, homeEvent: { minHeight: 108, borderRadius: 16, borderWidth: 1, borderColor: C.border, backgroundColor: C.white, padding: 10, flexDirection: 'row', gap: 12, alignItems: 'center', marginBottom: 11, overflow: 'hidden' }, homeEventImage: { width: 82, height: 82, borderRadius: 12, backgroundColor: C.blueSoft }, homeEventTitle: { color: C.text, fontSize: 13.5, fontWeight: '900', marginTop: 6, lineHeight: 18 }, homeEventMeta: { color: C.muted, fontSize: 10.5, marginTop: 5 },
+  homeHero: { backgroundColor: C.navy, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 18 }, homeTop: { flexDirection: 'row', alignItems: 'center', marginBottom: 13 }, hello: { color: C.white, fontSize: 18, fontWeight: '900' }, studentLine: { color: '#D4DFEC', fontSize: 10.5, marginTop: 2 }, circleBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', marginRight: 7, backgroundColor: 'rgba(255,255,255,0.08)' }, avatar: { width: 38, height: 38, borderRadius: 19, borderWidth: 1, borderColor: 'rgba(255,255,255,.35)', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,.12)' }, avatarText: { color: C.white, fontSize: 11, fontWeight: '900' }, banner: { height: 132, borderRadius: 18, overflow: 'hidden', marginTop: 16, backgroundColor: C.navy, shadowColor: C.shadow, shadowOpacity: .08, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 }, bannerImage: { width: '100%', height: '100%' }, bannerShade: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: 'rgba(2,24,50,0.32)' }, bannerContent: { position: 'absolute', left: 18, top: 28, right: 18 }, bannerTitle: { color: C.white, fontSize: 22, fontWeight: '900', textShadowColor: 'rgba(0,0,0,.2)', textShadowRadius: 4 }, bannerSub: { color: '#F4F7FB', fontSize: 12.5, marginTop: 4, fontWeight: '600' }, dots: { position: 'absolute', bottom: 11, left: 0, right: 0, flexDirection: 'row', gap: 5, justifyContent: 'center', alignItems: 'center' }, dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,.65)' }, dotActive: { width: 18, height: 6, borderRadius: 3, backgroundColor: C.red }, quickGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 10, marginTop: 14 }, homeEvent: { minHeight: 108, borderRadius: 16, borderWidth: 1, borderColor: C.border, backgroundColor: C.white, padding: 10, flexDirection: 'row', gap: 12, alignItems: 'center', marginBottom: 11, overflow: 'hidden' }, homeEventImage: { width: 82, height: 82, borderRadius: 12, backgroundColor: C.blueSoft }, homeEventTitle: { color: C.text, fontSize: 13.5, fontWeight: '900', marginTop: 6, lineHeight: 18 }, homeEventMeta: { color: C.muted, fontSize: 10.5, marginTop: 5 },
   chipsRow: { paddingHorizontal: 16, paddingTop: 2, paddingBottom: 10, gap: 8 }, chip: { paddingHorizontal: 14, height: 36, borderRadius: 18, backgroundColor: '#F0F3F7', alignItems: 'center', justifyContent: 'center' }, chipOn: { backgroundColor: C.redSoft, borderWidth: 1, borderColor: '#FFD7D9' }, chipText: { color: C.muted, fontSize: 11, fontWeight: '800' }, chipTextOn: { color: C.red }, eventCard: { minHeight: 118, borderRadius: 16, borderWidth: 1, borderColor: C.border, backgroundColor: C.white, padding: 10, flexDirection: 'row', gap: 12, alignItems: 'center', marginBottom: 12, overflow: 'hidden', shadowColor: C.shadow, shadowOpacity: .025, shadowRadius: 5, shadowOffset: { width: 0, height: 2 }, elevation: 1 }, eventThumb: { width: 96, height: 96, borderRadius: 13, backgroundColor: C.blueSoft }, eventTitle: { color: C.text, fontSize: 14, fontWeight: '900', lineHeight: 19 }, eventMeta: { color: C.muted, fontSize: 11, marginTop: 4, lineHeight: 15 }, heartBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginLeft: 2 },
-  detailHero: { height: 265, backgroundColor: C.navy }, detailShade: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,16,34,.22)' }, detailTop: { position: 'absolute', left: 16, right: 16, top: 14, flexDirection: 'row', justifyContent: 'space-between' }, detailCircle: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(3,29,61,.65)', alignItems: 'center', justifyContent: 'center' }, detailBody: { padding: 18 }, detailTitle: { color: C.navy, fontSize: 24, lineHeight: 30, fontWeight: '900', marginTop: 12 }, detailLine: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 13 }, detailText: { color: C.text, fontSize: 13, fontWeight: '700' }, detailDescription: { color: C.muted, fontSize: 13, lineHeight: 20, marginTop: 20 },
+  detailHero: { height: 265, backgroundColor: C.navy }, detailShade: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: 'rgba(0,16,34,.22)' }, detailTop: { position: 'absolute', left: 16, right: 16, top: 14, flexDirection: 'row', justifyContent: 'space-between' }, detailCircle: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(3,29,61,.65)', alignItems: 'center', justifyContent: 'center' }, detailBody: { padding: 18 }, detailTitle: { color: C.navy, fontSize: 24, lineHeight: 30, fontWeight: '900', marginTop: 12 }, detailLine: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 13 }, detailText: { color: C.text, fontSize: 13, fontWeight: '700' }, detailDescription: { color: C.muted, fontSize: 13, lineHeight: 20, marginTop: 20 },
   monthRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 4, marginBottom: 12 }, monthTitle: { color: C.navy, fontSize: 16, fontWeight: '900' }, calendarCard: { backgroundColor: C.white, borderRadius: 16, borderWidth: 1, borderColor: C.border, padding: 10 }, weekRow: { flexDirection: 'row' }, weekText: { flex: 1, textAlign: 'center', color: C.subtle, fontSize: 9.5, fontWeight: '800', paddingVertical: 8 }, daysGrid: { flexDirection: 'row', flexWrap: 'wrap' }, dayCell: { width: '14.28%', aspectRatio: 1, alignItems: 'center', justifyContent: 'center', borderRadius: 20 }, dayOn: { backgroundColor: C.red }, dayText: { color: C.text, fontSize: 11, fontWeight: '700' },
-  programmeHero: { height: 112, borderRadius: 16, overflow: 'hidden', justifyContent: 'center', paddingHorizontal: 16 }, programmeShade: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(2,28,58,.48)' }, programmeHeroTitle: { color: C.white, fontSize: 20, fontWeight: '900', lineHeight: 25 },
+  programmeHero: { height: 112, borderRadius: 16, overflow: 'hidden', justifyContent: 'center', paddingHorizontal: 16 }, programmeShade: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: 'rgba(2,28,58,.48)' }, programmeHeroTitle: { color: C.white, fontSize: 20, fontWeight: '900', lineHeight: 25 },
   studyCard: { backgroundColor: C.white, borderRadius: 14, borderWidth: 1, borderColor: C.border, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, studyTitle: { color: C.navy, fontSize: 13, fontWeight: '900' }, studySub: { color: C.muted, fontSize: 10.5, marginTop: 4 }, joinSmall: { paddingHorizontal: 15, height: 34, borderRadius: 9, borderWidth: 1, borderColor: C.red, alignItems: 'center', justifyContent: 'center' }, joinSmallText: { color: C.red, fontSize: 11, fontWeight: '900' },
   staffCard: { minHeight: 76, borderRadius: 14, borderWidth: 1, borderColor: C.border, backgroundColor: C.white, padding: 11, marginBottom: 10, flexDirection: 'row', alignItems: 'center', gap: 11 }, staffAvatar: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center' }, staffInitial: { fontSize: 12, fontWeight: '900' }, staffName: { color: C.text, fontSize: 13.5, fontWeight: '900' }, staffRole: { color: C.muted, fontSize: 10.5, lineHeight: 14, marginTop: 3 },
   filterRow: { flexDirection: 'row', gap: 10 }, filterBox: { flex: 1, height: 44, borderRadius: 11, borderWidth: 1, borderColor: C.border, backgroundColor: C.white, flexDirection: 'row', alignItems: 'center', gap: 7, paddingHorizontal: 11 }, filterText: { color: C.text, fontSize: 11.5, fontWeight: '700' }, roomCard: { minHeight: 100, borderRadius: 15, borderWidth: 1, borderColor: C.border, backgroundColor: C.white, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 11, marginBottom: 10 }, roomIcon: { width: 52, height: 52, borderRadius: 13, backgroundColor: C.blueSoft, alignItems: 'center', justifyContent: 'center' }, roomName: { color: C.navy, fontSize: 15, fontWeight: '900' }, roomMeta: { color: C.muted, fontSize: 10.5, marginTop: 3 }, bookBtn: { minWidth: 64, height: 36, borderRadius: 9, backgroundColor: C.red, alignItems: 'center', justifyContent: 'center' }, bookText: { color: C.white, fontSize: 11, fontWeight: '900' }, plusBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: C.red, alignItems: 'center', justifyContent: 'center' },
