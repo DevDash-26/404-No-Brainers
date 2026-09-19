@@ -1,0 +1,14 @@
+UCL CAMPUS HUB — START HERE
+
+1. Extract this folder.
+2. Open the folder in VS Code.
+3. Make sure you are using Node.js 22 LTS.
+4. Open Terminal in VS Code.
+5. Run: npm install
+6. Run: npm start
+7. Scan the QR code with Expo Go.
+
+IMPORTANT:
+- Use this as a NEW project folder.
+- Do not copy node_modules/package-lock.json from the old SDK 51 folder.
+- The app is a frontend prototype; backend/database features are demo interactions for now.
